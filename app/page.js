@@ -1,9 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// PART 1 OF 5: Imports, State, and Configuration
-// ═══════════════════════════════════════════════════════════════════════════════
-// Ultimate Life Dashboard - No Authentication Required
-// INSTRUCTIONS: Copy each part in order (1→2→3→4→5) into your React component file
-
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -260,15 +254,6 @@ export default function UltimateLifeDashboard() {
     { value: 'sports', label: '⚽ Sports' },
     { value: 'other', label: '🏋️ Other' }
   ];
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// END OF PART 1
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PART 2 OF 5: Effects, LocalStorage, and Core Functions
-// ═══════════════════════════════════════════════════════════════════════════════
-
   // ============ MOBILE DETECTION ============
   useEffect(() => {
     const checkMobile = () => {
@@ -557,15 +542,6 @@ export default function UltimateLifeDashboard() {
   const deleteHabit = useCallback((id) => {
     setHabits(prev => prev.filter(habit => habit.id !== id));
   }, []);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// END OF PART 2
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PART 3 OF 5: Additional Functions and Computed Values
-// ═══════════════════════════════════════════════════════════════════════════════
-
   // ============ MOOD FUNCTIONS ============
   const saveMood = useCallback((value) => {
     setMood(value);
@@ -813,15 +789,6 @@ export default function UltimateLifeDashboard() {
       : 0,
     [moodHistory]
   );
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// END OF PART 3
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PART 4 OF 5: Theme System and UI Components
-// ═══════════════════════════════════════════════════════════════════════════════
-
   // ============ THEME SYSTEM ============
   const getThemeColors = useMemo(() => {
     if (theme === 'light') {
@@ -1106,14 +1073,6 @@ export default function UltimateLifeDashboard() {
           </div>
         )}
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// END OF PART 4
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// PART 5 OF 5: Dashboard Views and Content (FINAL PART)
-// ═══════════════════════════════════════════════════════════════════════════════
-
         {/* Analytics View */}
         {activeView === 'analytics' && (
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
@@ -1388,8 +1347,3 @@ export default function UltimateLifeDashboard() {
     </div>
   );
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ✅ END OF PART 5 - COMPONENT COMPLETE!
-// ═══════════════════════════════════════════════════════════════════════════════
-// All 5 parts are now complete. Your dashboard is ready to use!
