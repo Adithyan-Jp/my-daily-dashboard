@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon, Cloud, CloudRain, Plus, Check, X, Target, Calendar, Clock, Zap, TrendingUp, Droplets, Wind, Flame, Sparkles } from 'lucide-react';
 
