@@ -21,6 +21,18 @@ export default function PersonalDashboard() {
   const [events, setEvents] = useState([]);
   const [showEventInput, setShowEventInput] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', time: '' });
+  const [goals, setGoals] = useState([]);
+  const [showGoalInput, setShowGoalInput] = useState(false);
+  const [newGoal, setNewGoal] = useState({ title: '', target: '', current: 0 });
+  const [waterIntake, setWaterIntake] = useState(0);
+  const [waterGoal] = useState(8);
+  const [mood, setMood] = useState(null);
+  const [quickLinks, setQuickLinks] = useState([]);
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [newLink, setNewLink] = useState({ title: '', url: '' });
+  const [expenses, setExpenses] = useState([]);
+  const [showExpenseInput, setShowExpenseInput] = useState(false);
+  const [newExpense, setNewExpense] = useState({ description: '', amount: '' });
 
   const motivationalQuotes = [
     "The secret of getting ahead is getting started.",
@@ -30,7 +42,17 @@ export default function PersonalDashboard() {
     "The harder you work for something, the greater you'll feel when you achieve it.",
     "Dream bigger. Do bigger.",
     "Success doesn't just find you. You have to go out and get it.",
-    "Push yourself, because no one else is going to do it for you."
+    "Push yourself, because no one else is going to do it for you.",
+    "Stop doubting yourself. Work hard and make it happen.",
+    "Small progress is still progress."
+  ];
+
+  const moods = [
+    { emoji: '😄', label: 'Great', value: 5 },
+    { emoji: '🙂', label: 'Good', value: 4 },
+    { emoji: '😐', label: 'Okay', value: 3 },
+    { emoji: '😔', label: 'Low', value: 2 },
+    { emoji: '😢', label: 'Bad', value: 1 }
   ];
 
   useEffect(() => {
@@ -140,6 +162,66 @@ export default function PersonalDashboard() {
     setEvents(events.filter(event => event.id !== id));
   };
 
+  const addGoal = () => {
+    if (newGoal.title.trim() && newGoal.target) {
+      setGoals([...goals, { 
+        id: Date.now(), 
+        title: newGoal.title, 
+        target: parseInt(newGoal.target),
+        current: 0
+      }]);
+      setNewGoal({ title: '', target: '', current: 0 });
+      setShowGoalInput(false);
+    }
+  };
+
+  const updateGoalProgress = (id, increment) => {
+    setGoals(goals.map(goal => {
+      if (goal.id === id) {
+        const newCurrent = Math.max(0, Math.min(goal.target, goal.current + increment));
+        return { ...goal, current: newCurrent };
+      }
+      return goal;
+    }));
+  };
+
+  const deleteGoal = (id) => {
+    setGoals(goals.filter(goal => goal.id !== id));
+  };
+
+  const addQuickLink = () => {
+    if (newLink.title.trim() && newLink.url.trim()) {
+      let url = newLink.url;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      setQuickLinks([...quickLinks, { id: Date.now(), title: newLink.title, url }]);
+      setNewLink({ title: '', url: '' });
+      setShowLinkInput(false);
+    }
+  };
+
+  const deleteQuickLink = (id) => {
+    setQuickLinks(quickLinks.filter(link => link.id !== id));
+  };
+
+  const addExpense = () => {
+    if (newExpense.description.trim() && newExpense.amount) {
+      setExpenses([...expenses, {
+        id: Date.now(),
+        description: newExpense.description,
+        amount: parseFloat(newExpense.amount),
+        date: new Date().toLocaleDateString()
+      }]);
+      setNewExpense({ description: '', amount: '' });
+      setShowExpenseInput(false);
+    }
+  };
+
+  const deleteExpense = (id) => {
+    setExpenses(expenses.filter(expense => expense.id !== id));
+  };
+
   const startFocusTimer = () => {
     setTimerMinutes(focusTime);
     setTimerSeconds(0);
@@ -156,6 +238,17 @@ export default function PersonalDashboard() {
   const totalTasks = tasks.length;
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   const todayEvents = events.filter(e => e.date === new Date().toDateString());
+  const todayExpenses = expenses.filter(e => e.date === new Date().toLocaleDateString());
+  const todayTotal = todayExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const CardStyle = {
+    background: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '24px',
+    padding: '1.5rem',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)'
+  };
 
   return (
     <div style={{
@@ -164,17 +257,9 @@ export default function PersonalDashboard() {
       padding: '2rem',
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
         {/* Header */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '24px',
-          padding: '2rem',
-          marginBottom: '2rem',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
-        }}>
+        <div style={{...CardStyle, marginBottom: '2rem'}}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: 'white', margin: '0 0 0.5rem 0' }}>
@@ -184,7 +269,7 @@ export default function PersonalDashboard() {
                 {time.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
               {weather && (
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.15)',
@@ -218,18 +303,38 @@ export default function PersonalDashboard() {
           </div>
         </div>
 
+        {/* Mood Tracker */}
+        <div style={{...CardStyle, marginBottom: '2rem'}}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '1.75rem' }}>😊</span>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', margin: 0 }}>How are you feeling today?</h2>
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {moods.map(m => (
+              <button
+                key={m.value}
+                onClick={() => setMood(m.value)}
+                style={{
+                  background: mood === m.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                  transform: mood === m.value ? 'scale(1.1)' : 'scale(1)'
+                }}
+              >
+                <div style={{ fontSize: '2.5rem' }}>{m.emoji}</div>
+                <div style={{ color: 'white', fontSize: '0.875rem', marginTop: '0.5rem' }}>{m.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Main Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {/* Tasks */}
-          <div style={{
-            gridColumn: 'span 2',
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '24px',
-            padding: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem' }}>
+          {/* Tasks - Takes 2 columns on larger screens */}
+          <div style={{...CardStyle, gridColumn: window.innerWidth > 1200 ? 'span 2' : 'span 1'}}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span style={{ fontSize: '1.75rem' }}>🎯</span>
@@ -245,8 +350,7 @@ export default function PersonalDashboard() {
                   width: '48px',
                   height: '48px',
                   fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s'
+                  cursor: 'pointer'
                 }}
               >
                 +
@@ -372,15 +476,10 @@ export default function PersonalDashboard() {
             </div>
           </div>
 
+          {/* Continue with rest of components... I'll add them in smaller chunks */}
+          
           {/* Focus Timer */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '24px',
-            padding: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
+          <div style={CardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <span style={{ fontSize: '1.5rem' }}>⚡</span>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white', margin: 0 }}>Focus Timer</h3>
@@ -442,14 +541,7 @@ export default function PersonalDashboard() {
           </div>
 
           {/* Quote */}
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '24px',
-            padding: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
+          <div style={CardStyle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <span style={{ fontSize: '1.5rem' }}>✨</span>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white', margin: 0 }}>Daily Inspiration</h3>
@@ -460,15 +552,7 @@ export default function PersonalDashboard() {
           </div>
 
           {/* Quick Notes */}
-          <div style={{
-            gridColumn: 'span 2',
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '24px',
-            padding: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
+          <div style={{...CardStyle, gridColumn: window.innerWidth > 1200 ? 'span 2' : 'span 1'}}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <span style={{ fontSize: '1.5rem' }}>📝</span>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white', margin: 0 }}>Quick Notes</h3>
@@ -496,7 +580,7 @@ export default function PersonalDashboard() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: '2rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-          <p>V2.0 - Your Personal Command Center 🚀</p>
+          <p>V3.0 - Your Complete Life Command Center 🚀</p>
         </div>
       </div>
     </div>
