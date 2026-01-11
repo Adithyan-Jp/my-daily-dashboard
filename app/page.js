@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase'; // Access our DB connection
+import { supabase } from '../lib/supabase';
 
 export default function PersonalDashboard() {
   // --- State Management ---
@@ -15,6 +15,7 @@ export default function PersonalDashboard() {
   const [timerMinutes, setTimerMinutes] = useState(25);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [quote, setQuote] = useState('');
+  const [quickNotes, setQuickNotes] = useState('');
   const [weather, setWeather] = useState(null);
   const [goals, setGoals] = useState([]);
   const [waterIntake, setWaterIntake] = useState(0);
@@ -38,10 +39,10 @@ export default function PersonalDashboard() {
     { emoji: '😢', label: 'Bad', value: 1 }
   ];
 
-  // 1. INITIAL LOAD & CLOUD FETCH
+  // --- 1. INITIAL LOAD & CLOUD FETCH ---
   useEffect(() => {
     const fetchCloudData = async () => {
-      // Fetch data from the 'user_data' table for ID 1
+      // Pulling from your Supabase table 'user_data'
       const { data, error } = await supabase
         .from('user_data')
         .select('content')
@@ -55,8 +56,9 @@ export default function PersonalDashboard() {
         setExpenses(saved.expenses || []);
         setGoals(saved.goals || []);
         setMood(saved.mood || null);
+        setQuickNotes(saved.quickNotes || '');
       }
-      setMounted(true); // Only show UI after data is loaded
+      setMounted(true); // Prevents "window not defined" by waiting for client-side
     };
 
     fetchCloudData();
@@ -68,6 +70,7 @@ export default function PersonalDashboard() {
     else setGreeting('Good Evening');
     setQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
     
+    // Fetching Weather for Thiruvananthapuram
     fetch('https://api.open-meteo.com/v1/forecast?latitude=8.5241&longitude=76.9366&current=temperature_2m,relative_humidity_2m&timezone=auto')
       .then(res => res.json())
       .then(data => setWeather(data.current))
@@ -76,25 +79,23 @@ export default function PersonalDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // 2. AUTO-SAVE TO CLOUD
+  // --- 2. AUTO-SAVE TO CLOUD ---
   useEffect(() => {
     if (mounted) {
       const saveToCloud = async () => {
-        const dashboardState = { tasks, waterIntake, expenses, goals, mood };
-        const { error } = await supabase
+        const dashboardState = { tasks, waterIntake, expenses, goals, mood, quickNotes };
+        // Saving the whole object into the 'content' column
+        await supabase
           .from('user_data')
           .upsert({ id: 1, content: dashboardState });
-        
-        if (error) console.error("Cloud Save Error:", error);
       };
 
-      // Wait 1000ms (1s) after last change before hitting the database
-      const timeout = setTimeout(saveToCloud, 1000);
+      const timeout = setTimeout(saveToCloud, 1000); // Wait 1s after changes
       return () => clearTimeout(timeout);
     }
-  }, [tasks, waterIntake, expenses, goals, mood, mounted]);
+  }, [tasks, waterIntake, expenses, goals, mood, quickNotes, mounted]);
 
-  // --- Actions ---
+  // --- UI Action Helpers ---
   const addTask = () => {
     if (newTask.trim()) {
       setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }]);
@@ -111,7 +112,7 @@ export default function PersonalDashboard() {
     }
   };
 
-  if (!mounted) return null; // Wait for initial fetch to finish
+  if (!mounted) return null;
 
   const CardStyle = {
     background: 'rgba(255, 255, 255, 0.1)',
@@ -145,6 +146,7 @@ export default function PersonalDashboard() {
           </div>
         </div>
 
+        {/* MAIN GRID */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
           
           {/* MOOD */}
@@ -164,9 +166,9 @@ export default function PersonalDashboard() {
           <div style={CardStyle}>
             <h3>Water Intake 💧</h3>
             <div style={{display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem'}}>
-              <button onClick={() => setWaterIntake(Math.max(0, waterIntake - 1))} style={{background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', padding: '10px', borderRadius: '50%', cursor: 'pointer'}}>-</button>
+              <button onClick={() => setWaterIntake(Math.max(0, waterIntake - 1))} style={{background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer'}}>-</button>
               <span style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{waterIntake} / 8 Glasses</span>
-              <button onClick={() => setWaterIntake(waterIntake + 1)} style={{background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', padding: '10px', borderRadius: '50%', cursor: 'pointer'}}>+</button>
+              <button onClick={() => setWaterIntake(waterIntake + 1)} style={{background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer'}}>+</button>
             </div>
           </div>
 
@@ -174,7 +176,7 @@ export default function PersonalDashboard() {
           <div style={CardStyle}>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
               <h3>Priorities 🎯</h3>
-              <button onClick={() => setShowTaskInput(!showTaskInput)} style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.2rem'}}>+</button>
+              <button onClick={() => setShowTaskInput(!showTaskInput)} style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontSize: '1.5rem'}}>+</button>
             </div>
             {showTaskInput && (
               <div style={{display: 'flex', gap: '5px', marginTop: '10px'}}>
@@ -188,12 +190,12 @@ export default function PersonalDashboard() {
                   <input type="checkbox" checked={t.completed} onChange={() => {
                     setTasks(tasks.map(task => task.id === t.id ? {...task, completed: !task.completed} : task))
                   }} />
-                  <span>{t.text}</span>
+                  <span style={{textDecoration: t.completed ? 'line-through' : 'none'}}>{t.text}</span>
                 </li>
               ))}
             </ul>
           </div>
-          
+
           {/* EXPENSES */}
           <div style={CardStyle}>
             <h3>Daily Expenses 💰</h3>
@@ -207,6 +209,18 @@ export default function PersonalDashboard() {
               </div>
             )}
           </div>
+
+          {/* NOTES */}
+          <div style={{...CardStyle, gridColumn: 'span 1 md:span 2'}}>
+            <h3>Quick Notes 📝</h3>
+            <textarea 
+              value={quickNotes} 
+              onChange={(e) => setQuickNotes(e.target.value)}
+              style={{width: '100%', height: '150px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', borderRadius: '12px', padding: '10px', marginTop: '10px', resize: 'none'}}
+              placeholder="Start typing notes..."
+            />
+          </div>
+
         </div>
 
         <div style={{textAlign: 'center', marginTop: '3rem', opacity: 0.6, fontStyle: 'italic', color: 'white'}}>
