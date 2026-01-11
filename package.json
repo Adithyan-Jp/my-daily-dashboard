@@ -8,11 +8,12 @@
     "start": "next start",
     "lint": "next lint"
   },
-  "dependencies": {
-    "react": "^18",
-    "react-dom": "^18",
-    "next": "latest",
-    "lucide-react": "^0.300.0"
+ "dependencies": {
+  "next": "latest",
+  "react": "latest",
+  "react-dom": "latest",
+  "@supabase/supabase-js": "latest"
+}
   },
   "devDependencies": {
     "postcss": "^8",
